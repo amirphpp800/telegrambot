@@ -1,26 +1,12 @@
 
 let captchaCode = '';
 let captchaAttempts = 0;
-let turnstileWidgetId = null;
 
 document.addEventListener('DOMContentLoaded', () => {
   const orderForm = document.getElementById('order-form');
   
-  // Initialize Cloudflare Turnstile after the DOM is loaded
-  if (window.turnstile) {
-    turnstileWidgetId = turnstile.render('#cf-turnstile', {
-      sitekey: '0x4AAAAAAABFT6G0OJJ0jnQh',
-      theme: 'dark',
-      callback: function(token) {
-        console.log(`Challenge Success ${token}`);
-      },
-    });
-  } else {
-    console.error('Turnstile not loaded');
-  }
-
   if (orderForm) {
-    orderForm.addEventListener('submit', async (e) => {
+    orderForm.addEventListener('submit', (e) => {
       e.preventDefault();
       showCaptchaModal();
     });
@@ -106,29 +92,14 @@ function submitForm() {
   }
 
   try {
-    let token = null;
-    if (window.turnstile && turnstileWidgetId) {
-      token = turnstile.getResponse(turnstileWidgetId);
-    }
-    
-    if (!token) {
-      showNotification('لطفا کپچا را تکمیل کنید', 'error');
-      return;
-    }
-    
-    orderData.captchaToken = token;
-    
     // Submit order to server
     submitOrder(orderData)
       .then(result => {
         // Show success message
         showNotification('سفارش شما با موفقیت ثبت شد. به زودی با شما تماس خواهیم گرفت.', 'success');
         
-        // Reset form and turnstile
+        // Reset form
         orderForm.reset();
-        if (window.turnstile && turnstileWidgetId) {
-          turnstile.reset(turnstileWidgetId);
-        }
       })
       .catch(error => {
         showNotification('خطا در ثبت سفارش. لطفا دوباره تلاش کنید.', 'error');
