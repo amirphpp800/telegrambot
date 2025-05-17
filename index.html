@@ -81,8 +81,16 @@
             <textarea id="message" name="message" rows="3" placeholder="توضیحات خود را وارد کنید"></textarea>
           </div>
 
-          <div class="turnstile-container">
-            <div id="cf-turnstile" class="cf-turnstile" data-sitekey="0x4AAAAAABdtDog8VlnykL7j"></div>
+          <div id="captchaModal" class="modal">
+            <div class="modal-content">
+              <h3 class="modal-title">کد امنیتی را وارد کنید</h3>
+              <div id="captchaDisplay" style="font-size: 24px; color: #fff; margin: 10px 0;"></div>
+              <input type="text" id="captchaInput" class="captcha-input" placeholder="کد را وارد کنید">
+              <div class="modal-buttons">
+                <button type="button" class="modal-btn modal-btn-submit" onclick="validateCaptcha()">تایید</button>
+                <button type="button" class="modal-btn modal-btn-cancel" onclick="closeCaptchaModal()">لغو</button>
+              </div>
+            </div>
           </div>
           <button type="submit" class="btn btn-submit">
             <i class="fas fa-paper-plane"></i> ارسال سفارش
