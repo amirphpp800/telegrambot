@@ -48,7 +48,7 @@
           </div>
         </div>
       </div>
-      
+
       <div class="order-form-container">
         <h2>سفارش DNS اختصاصی</h2>
         <form id="order-form" class="order-form">
@@ -56,12 +56,12 @@
             <label for="name"><i class="fas fa-user"></i> نام و نام خانوادگی</label>
             <input type="text" id="name" name="name" placeholder="نام خود را وارد کنید" required>
           </div>
-          
+
           <div class="form-group">
             <label for="telegram"><i class="fab fa-telegram"></i> آیدی تلگرام</label>
             <input type="text" id="telegram" name="telegram" placeholder="مثال: @username" required>
           </div>
-          
+
           <div class="form-group">
             <label for="country"><i class="fas fa-globe"></i> انتخاب کشور</label>
             <select id="country" name="country" required>
@@ -73,14 +73,17 @@
               <option value="usa">آمریکا</option>
             </select>
           </div>
-          
-          
-          
+
+
+
           <div class="form-group">
             <label for="message"><i class="fas fa-comment"></i> توضیحات اضافی</label>
             <textarea id="message" name="message" rows="3" placeholder="توضیحات خود را وارد کنید"></textarea>
           </div>
-          
+
+          <div class="turnstile-container">
+            <div id="cf-turnstile" class="cf-turnstile" data-sitekey="0x4AAAAAABdtDog8VlnykL7j"></div>
+          </div>
           <button type="submit" class="btn btn-submit">
             <i class="fas fa-paper-plane"></i> ارسال سفارش
           </button>
@@ -95,6 +98,7 @@
       </div>
     </main>
 
+    <script src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>
     <script src="script.js"></script>
   </div>
 </body>
