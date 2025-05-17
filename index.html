@@ -80,6 +80,10 @@
             <label for="message"><i class="fas fa-comment"></i> توضیحات اضافی</label>
             <textarea id="message" name="message" rows="3" placeholder="توضیحات خود را وارد کنید"></textarea>
           </div>
+          
+          <div class="turnstile-container">
+            <div id="cf-turnstile" class="cf-turnstile" data-sitekey="0x4AAAAAAABFT6G0OJJ0jnQh" data-theme="dark"></div>
+          </div>
 
           <div id="captchaModal" class="modal">
             <div class="modal-content">
@@ -106,7 +110,7 @@
       </div>
     </main>
 
-    <script src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>
+    <script src="https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit" async defer></script>
     <script src="script.js"></script>
   </div>
 </body>
