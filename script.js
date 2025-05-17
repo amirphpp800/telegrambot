@@ -1,24 +1,75 @@
+
 let captchaCode = '';
 let captchaAttempts = 0;
+let turnstileWidgetId = null;
+
+document.addEventListener('DOMContentLoaded', () => {
+  const orderForm = document.getElementById('order-form');
+  
+  // Initialize Cloudflare Turnstile after the DOM is loaded
+  if (window.turnstile) {
+    turnstileWidgetId = turnstile.render('#cf-turnstile', {
+      sitekey: '0x4AAAAAAABFT6G0OJJ0jnQh',
+      theme: 'dark',
+      callback: function(token) {
+        console.log(`Challenge Success ${token}`);
+      },
+    });
+  } else {
+    console.error('Turnstile not loaded');
+  }
+
+  if (orderForm) {
+    orderForm.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      showCaptchaModal();
+    });
+  }
+
+  // Allow submitting captcha with Enter key
+  const captchaInput = document.getElementById('captchaInput');
+  if (captchaInput) {
+    captchaInput.addEventListener('keyup', (e) => {
+      if (e.key === 'Enter') {
+        validateCaptcha();
+      }
+    });
+  }
+});
 
 function generateCaptcha() {
   captchaCode = Math.floor(1000 + Math.random() * 9000).toString();
-  document.getElementById('captchaDisplay').textContent = captchaCode;
+  const captchaDisplay = document.getElementById('captchaDisplay');
+  if (captchaDisplay) {
+    captchaDisplay.textContent = captchaCode;
+  }
 }
 
 function showCaptchaModal() {
   generateCaptcha();
-  document.getElementById('captchaModal').style.display = 'block';
-  document.getElementById('captchaInput').value = '';
-  document.getElementById('captchaInput').focus();
+  const captchaModal = document.getElementById('captchaModal');
+  if (captchaModal) {
+    captchaModal.style.display = 'block';
+    const captchaInput = document.getElementById('captchaInput');
+    if (captchaInput) {
+      captchaInput.value = '';
+      captchaInput.focus();
+    }
+  }
 }
 
 function closeCaptchaModal() {
-  document.getElementById('captchaModal').style.display = 'none';
+  const captchaModal = document.getElementById('captchaModal');
+  if (captchaModal) {
+    captchaModal.style.display = 'none';
+  }
 }
 
 function validateCaptcha() {
-  const input = document.getElementById('captchaInput').value;
+  const captchaInput = document.getElementById('captchaInput');
+  if (!captchaInput) return;
+  
+  const input = captchaInput.value;
   if (input === captchaCode) {
     closeCaptchaModal();
     captchaAttempts = 0;
@@ -32,111 +83,62 @@ function validateCaptcha() {
     }
     alert('کد وارد شده اشتباه است. لطفا دوباره تلاش کنید.');
     generateCaptcha();
-    document.getElementById('captchaInput').value = '';
+    captchaInput.value = '';
   }
 }
 
-// Form submission handling
-document.addEventListener('DOMContentLoaded', () => {
+function submitForm() {
   const orderForm = document.getElementById('order-form');
+  if (!orderForm) return;
+  
+  // Get form data
+  const formData = new FormData(orderForm);
+  const orderData = {
+    name: formData.get('name'),
+    telegram: formData.get('telegram'),
+    country: formData.get('country'),
+    message: formData.get('message')
+  };
 
-  if (orderForm) {
-    orderForm.addEventListener('submit', async (e) => {
-      e.preventDefault();
-      showCaptchaModal();
-    });
+  // Validate form data
+  if (!validateForm(orderData)) {
+    return;
   }
 
-  // Allow submitting captcha with Enter key
-  document.getElementById('captchaInput').addEventListener('keyup', (e) => {
-    if (e.key === 'Enter') {
-      validateCaptcha();
+  try {
+    let token = null;
+    if (window.turnstile && turnstileWidgetId) {
+      token = turnstile.getResponse(turnstileWidgetId);
     }
-  });
-
-  function submitForm() {
-    // Get form data
-    const formData = new FormData(orderForm);
-    const orderData = {
-      name: formData.get('name'),
-      telegram: formData.get('telegram'),
-      country: formData.get('country'),
-      message: formData.get('message')
-    };
-
-    // Validate form data
-    if (!validateForm(orderData)) {
+    
+    if (!token) {
+      showNotification('لطفا کپچا را تکمیل کنید', 'error');
       return;
     }
-
-    try {
-      const token = turnstile.getResponse('#cf-turnstile');
-      if (!token) {
-        showNotification('لطفا کپچا را تکمیل کنید', 'error');
-        return;
-      }
-      orderData.captchaToken = token;
-      // Submit order to server
-      const result = await submitOrder(orderData);
-
-      // Show success message
-      showNotification('سفارش شما با موفقیت ثبت شد. به زودی با شما تماس خواهیم گرفت.', 'success');
-
-      // Reset form
-      orderForm.reset();
-    } catch (error) {
-      showNotification('خطا در ثبت سفارش. لطفا دوباره تلاش کنید.', 'error');
-      console.error('Error submitting order:', error);
-    }
+    
+    orderData.captchaToken = token;
+    
+    // Submit order to server
+    submitOrder(orderData)
+      .then(result => {
+        // Show success message
+        showNotification('سفارش شما با موفقیت ثبت شد. به زودی با شما تماس خواهیم گرفت.', 'success');
+        
+        // Reset form and turnstile
+        orderForm.reset();
+        if (window.turnstile && turnstileWidgetId) {
+          turnstile.reset(turnstileWidgetId);
+        }
+      })
+      .catch(error => {
+        showNotification('خطا در ثبت سفارش. لطفا دوباره تلاش کنید.', 'error');
+        console.error('Error submitting order:', error);
+      });
+  } catch (error) {
+    showNotification('خطا در ثبت سفارش. لطفا دوباره تلاش کنید.', 'error');
+    console.error('Error submitting order:', error);
   }
-
-  // Smooth scrolling for navigation links
-  const navLinks = document.querySelectorAll('nav a');
-
-  navLinks.forEach(link => {
-    link.addEventListener('click', function(e) {
-      e.preventDefault();
-
-      // Update active link
-      navLinks.forEach(navLink => navLink.classList.remove('active'));
-      this.classList.add('active');
-
-      // Scroll to section
-      const targetId = this.getAttribute('href').substring(1);
-      const targetSection = document.getElementById(targetId);
-
-      if (targetSection) {
-        window.scrollTo({
-          top: targetSection.offsetTop - 70,
-          behavior: 'smooth'
-        });
-      }
-    });
-  });
-
-  // Update active menu item on scroll
-  window.addEventListener('scroll', () => {
-    const sections = document.querySelectorAll('section');
-    let currentSection = '';
-
-    sections.forEach(section => {
-      const sectionTop = section.offsetTop;
-      const sectionHeight = section.clientHeight;
-
-      if (window.pageYOffset >= sectionTop - 100 && 
-          window.pageYOffset < sectionTop + sectionHeight - 100) {
-        currentSection = section.getAttribute('id');
-      }
-    });
-
-    navLinks.forEach(link => {
-      link.classList.remove('active');
-      if (link.getAttribute('href') === `#${currentSection}`) {
-        link.classList.add('active');
-      }
-    });
-  });
-});
+}
 
 // Form validation
 function validateForm(data) {
@@ -290,9 +292,3 @@ notificationStyles.textContent = `
   }
 `;
 document.head.appendChild(notificationStyles);
-// Show captcha prompt
-function showCaptchaPrompt() {
-  setTimeout(() => {
-    alert(`کد تایید شما: ${currentCaptcha}\nلطفا این کد را در مرحله بعد وارد کنید.`);
-  }, 100);
-}
