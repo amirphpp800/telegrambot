@@ -21,6 +21,12 @@ document.addEventListener('DOMContentLoaded', () => {
       }
       
       try {
+        const token = turnstile.getResponse('#cf-turnstile');
+        if (!token) {
+          showNotification('لطفا کپچا را تکمیل کنید', 'error');
+          return;
+        }
+        orderData.captchaToken = token;
         // Submit order to server
         const result = await submitOrder(orderData);
         
