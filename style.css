@@ -867,17 +867,7 @@ h1, h2, h3, h4, h5, h6 {
     font-size: 0.95rem;
   }
 }
-.turnstile-container {
-  display: flex;
-  justify-content: center;
-  margin-bottom: 1.5rem;
-  direction: ltr; /* Cloudflare Turnstile needs LTR direction */
-}
 
-.cf-turnstile {
-  margin: 0 auto;
-  transform: scale(0.95); /* Slightly scale down to fit better */
-}
 
 .modal {
   display: none;
